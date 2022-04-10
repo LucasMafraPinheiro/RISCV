@@ -1,0 +1,51 @@
+# Disciplina: Arquitetura e Organização de Processadores
+# Atividade: Avaliação 01 – Programação em Linguagem de Montagem
+# Exercício 01
+# Aluno: Lucas Mafra Pinheiro
+
+.data #data segment
+msg1: 
+	.asciz "\nEntre com o valor de X: "
+msg2:
+	.asciz "\nEtre com o valor de Y: "
+msg3:
+	.asciz "\nA soma de X e Y é igual a "
+.text
+#s1 = X
+#s2 = Y
+#a7 = codigo de syscall
+#a0 = valor de entrada/retorno syscall
+
+	main:
+	
+	#Imprimir input X
+	li a7, 4 #codigo de impressao de texto (syscall.master)
+	la a0, msg1 #.data/msg1
+	ecall
+	#Ler X
+	li a7, 5 #codigo de input de integral (syscall.master)
+	ecall
+	add s0, a0, zero #salva o input a7 em s0
+	#------------------------------------------
+	#Imprimir input Y
+	li a7, 4#codigo de impressao de texto (syscall.master)
+	la a0, msg2 #.data/msg2
+	ecall 
+	#Ler Y
+	li a7, 5 #codigo de input de integral (syscall.master)
+	ecall
+	add s1, a0, zero #salva o input a7 em s1
+	#------------------------------------------
+	#Somar X e Y
+	add s1, s1, s0 # C++ -> x+=y
+	li a7, 4 #codigo de impressao de texto (syscall.master)
+	la a0, msg3 #.data/msg3
+	ecall
+	li a7, 1 #codigo de impressao de integral (syscall.master)
+	mv a0, s1 #a0 = X
+	ecall
+	#------------------------------------------
+	#exit
+	li a7, 10 #codigo de terminate execution (syscall.master)
+	ecall
+	
