@@ -1,0 +1,26 @@
+# Disciplina: Arquitetura e Organização de Processadores
+# Atividade: Avaliação 01 – Programação em Linguagem de Montagem
+# Exercício 02
+# Aluno: Lucas Mafra Pinheiro
+
+.text
+
+#t0 = Referencia para o loop
+#t1 = numero contado
+#a7 = codigo de syscall
+#a0 = valor de entrada/retorno syscall
+	
+	main:
+	addi t0, zero, 10 #Referencia igual a 10, para o loop
+	addi t1, zero, 0 #O contador comeca em zero
+	#------------------------------------------
+	Loop: li a7,1 #Comeco do loop com codigo de chamada escrita de integral (syscall.master)
+	mv a0,t1 #a0 = contador
+	ecall #Impressao do contador
+	addi t1,t1,1 #contador++
+	blt t1,t0,Loop #Se contador<10, voltar a linha Loop(15)
+	#-----------------------------------------
+	#exit
+	li a7, 10 #codigo de terminate execution (syscall.master)
+	ecall
+	
