@@ -1,0 +1,66 @@
+# Disciplina: Arquitetura e Organização de Processadores
+# Atividade: Avaliação 01 – Programação em Linguagem de Montagem
+# Exercício 03
+# Aluno: Lucas Mafra Pinheiro
+
+.data 
+	myArray: .space 32 #Alocar 32 bytes pois int`s consumem 4 bytes de memoria, logo 4x8=32bytes
+	msg1: .asciz "\nDigite o valor de A[0]: " #22 caracteres ate o 0
+	msg2: .asciz "\nO valor de A[0] eh: " #15 caracteres ate o 0
+	msg3: .asciz "\nApresentacao do vetor lido:\n"
+.text
+#t0 -> Contador do indicie do vetor
+#s0 -> Parametro de breakout do loop
+#t3 -> Contador de repetição
+#t1 -> ponteiro para msg
+#t5 -> ponteiro para vetor
+	main:
+	addi t0, zero, 0 #Contador do Index da array 0
+	addi s0, zero, 8
+	addi t3, zero, 0
+	la t1, msg1 #t1 recebe o endereco de msg1
+	la t5, myArray
+	addi t1,t1,21 #t1 recebe o endereco de msg1+22, pois eh aonde esta o indice
+	Loop1:
+		li a7, 4 #codigo de impressao de texto (syscall.master)
+		la a0, msg1 #msg1
+		ecall
+		li a7, 5 #codigo de input de integral (syscall.master)
+		ecall
+		sw a0, 0(t5)#move o retorno do syscall para o array na posicao t0
+		lb t0, 0(t1)
+		addi t0,t0,1
+		addi t5,t5,4
+		addi t3,t3,1
+		sb t0, 0(t1)
+		blt t3,s0,Loop1
+	li a7, 4 #cidugi de impressao de texto
+	la a0, msg3 #msg3
+	ecall 
+	addi t0,zero,0 #zerar contadores
+	addi t3,zero,0 #zerar contadores
+	la t5,myArray #t5 recebe endereco de array
+	la t1, msg2 #t1 carrega o endereco da mensagem
+	addi t1,t1, 14 #t1 posicionado no byte do indice
+	Loop2:
+		li a7,4 #codigo de impressao de texto
+		la a0, msg2 #msg2
+		ecall
+		li a7, 1 #codigo de impressao de int
+		lw a0, 0(t5) #carrega a palavra da array na posicao t5 para a variavel do syscall
+		ecall
+		lb t0,0(t1) #carrega o byte do indicie
+		addi t0,t0,1 #soma 1 ao byte do indicie 
+		addi t5,t5,4 #soma 4 bytes ao indicie do array pois int=4byte
+		addi t3,t3,1 #soma 1 ao contador para condicao do loop
+		sb t0, 0(t1)
+		blt t3,s0,Loop2
+	#exit
+	li a7, 10 #codigo de terminate execution (syscall.master)
+	ecall
+	
+	
+	
+	
+
+	
