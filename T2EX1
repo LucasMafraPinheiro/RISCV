@@ -1,0 +1,98 @@
+# Disciplina: Arquitetura e OrganizaÃ§Ã£o de Processadores
+# Atividade: AvaliaÃ§Ã£o 02 â€“ ProgramaÃ§Ã£o em Linguagem de Montagem
+# ExercÃ­cio 01
+# Aluno: Lucas Mafra Pinheiro
+
+.data
+	vetor_a: .word 0,0,0,0,0,0,0,0
+	vetor_b: .word 0,0,0,0,0,0,0,0
+	vetor_c: .word 0,0,0,0,0,0,0,0
+	msg1: .asciz "\nEntre com o tamanho dos vetores(max 8): "
+	msg2: .asciz "\nVetor A[0]: " #posicao letra 6, numero 8
+	msg3: .asciz "\nValor invalido"
+.text
+main:
+	la s0, vetor_a #Carregar endereco de vetor A
+	la s1, msg2 #Carregar endereco de msg2
+	addi t0, zero, 0 #indice
+	addi t2, zero, 8 #maximo do vetor
+	#---
+Loop1:  li a7, 4 #cod de impressao de string
+	la a0, msg1
+	ecall
+	li a7, 5 #cod de input de inteiro
+	ecall
+	mv t1, a0 #retorno para registrador t1
+	blez, t1, valor_invalido #t1<=0 voltar ao loop
+	bgt t1, t2, valor_invalido #t1>8 voltar ao loop
+	mv s3, t1 #salvar o valor em um registrador salvo
+	
+	jal entrada_vetor #chamada de funcao para vetor A
+	jal zerar_indicie #zerar indicie do texto string, e mudar o nome do vetor
+	la s0, vetor_b #carregar enderedo do vetor B (string)
+	sub t0, t0, t0 #zerar t0 (indice)
+	jal entrada_vetor #chamada de funcao para vetor B
+	jal zerar_indicie #zerar indice para vetor C (string)
+	sub t0, t0, t0 #zerar t0
+	la s0, vetor_a #carregar endereco de vetor A para a proxima funcao
+	jal imprimir_vetor 
+	jal exit #codigo de saida
+	#---
+entrada_vetor:  add t6, t0, t0 #2i
+	add t6, t6, t6 #4i
+	add t6, t6, s0 # 4i + end, base = end de vetor [i]
+	li a7, 4 #cod de impressao de string
+	mv a0, s1 #carregar a msg em s1
+	ecall
+	li a7, 5 #cod de impressao inteiro
+	ecall 
+	sw a0, 0(t6) #salvar valor retornado na posicao apontada pelo t6
+	addi t0, t0, 1 #incrementar contador
+	lb t1, 9(s1) #carregar indice da string
+	addi t1, t1, 1 #incrementar um
+	sb t1, 9(s1) #armazenar indice da string
+	blt t0, s3, entrada_vetor #loop quando contador for menor que numero maximo de elementos
+	jr ra
+	#---
+imprimir_vetor:  add t6, t0, t0 #2i
+	add t6, t6, t6 #4i
+	add t6, t6, s0 # 4i + end, base = end de vetor [i]
+	li a7, 4 #cod de impressao de string
+	mv a0, s1 #carregar o endereco em s1 para chamada de sistema
+	ecall
+	li a7, 1 #carregar codigo de impressao de inteiro
+	lw t2, 0(t6) #Carregar o valor no endereco relativo apontado por t6
+	lw t3, 32(t6) #Carregar o valor do mesmo indice no proximo vetor, que esta localizado a 8 palavras de distancias, por isso esse offset de 32 bytes (8x4=32)
+	bgt t2, t3, Else #Se t2(A), for maior que t3(B), o PC vai para linha label Else, caso contrario, segue o codigo
+	sw t3, 64(t6)#Na situacao onde t3(B) eh maior que t2(A), salva o valor t3(B) em um offset de 64 a partir do vetor A, ou seja, mesmo indice, mas 2 vetores a frente, no caso, vetor C
+	mv a0, t3 #E move esse valor para a0, onde ficara armazenado para impressao na chamada de sistema
+	j addind#Pula para a linha addind
+Else:	sw t2, 64(t6)#Mesma coisa das linhas 68 e 69, porem para caso t2(A) seja maior
+	mv a0, t2
+addind: lb t1, 9(s1)#Mudar indice na string
+	addi t1, t1, 1
+	sb t1, 9(s1)
+	addi t0, t0, 1 #Incrementar contador
+	ecall #Chamada de sistema
+	blt t0, s3, imprimir_vetor #Loop enquanto contador for menor que o numero de elementos do vetor 
+	jr ra #voltar para endereco no codigo principal
+	#---
+zerar_indicie: mv t2, s1 #Mover endereco da string para t2
+	mv t1, s3 #mover numero maximo de elementos no vetor para t1
+	lb t4, 9(t2) #carregar o indice do vetor na string
+	sub t4, t4, t1 #diminuir o indice pelo valor do numero maximo de elementos no vetor
+	sb t4, 9(t2) #armazenar novamente o indice
+	lb t4, 7(t2) #carregar o nome do vetor (A ou B)
+	addi t4, t4, 1 #incrementar um (A->B->C)
+	sb t4, 7(t2) #armazenar novamente
+	jr ra #retornar ao codigo
+	#---
+valor_invalido:
+	li a7, 4 #cod dei mpressao de string
+	la a0, msg3 #imprimir valro invalido
+	ecall 
+	j Loop1 #voltar para o loop1
+	#--
+exit: 	li a7, 10 #codigo de terminate execution (syscall.master)
+	ecall
+	
